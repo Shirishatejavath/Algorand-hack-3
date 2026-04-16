@@ -4,18 +4,21 @@ from pydantic import BaseModel
 import random
 import time
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
-app = FastAPI(title="BlockSentinel.ai TXS Engine")
+app = FastAPI(title="BlockSentinel.ai TXS Engine + Predictor")
 
 # Enable CORS for Frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify the Vite dev server URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from services.txs_engine.analyzer import analyze_wallet as txs_analyze
+from services.simulate import simulate_transaction as txs_simulate
 
 # Data Models
 class WalletRequest(BaseModel):
@@ -25,7 +28,10 @@ class AnalysisResponse(BaseModel):
     score: int
     risk: str
     reasons: List[str]
+    breakdown: Optional[Dict[str, int]] = None
     timestamp: str
+    tx_count: int
+    is_real_data: bool
 
 class Transaction(BaseModel):
     tx_id: str
@@ -34,80 +40,66 @@ class Transaction(BaseModel):
     amount: float
     timestamp: str
 
+class SimulateRequest(BaseModel):
+    from_wallet: str
+    to_wallet: str
+    amount: float
+    asset: str = "ALGO"
+
+class SimulateResponse(BaseModel):
+    simulation: str
+    risk_score: int
+    risk_level: str
+    warnings: List[str]
+    recommendation: str
+
 # Mock Database
 analysis_history = []
-flagged_wallets = [
-    "AAAAA_SCAM_WALLET_DO_NOT_SEND",
-    "PRTM9YVZW8KLNHQX7GCM2BU6XIE4S3D5ZF1VRYJA", # High risk sample
-]
-
-def calculate_txs_score(address: str):
-    """
-    TXS Engine Logic (MVP)
-    Implement rule-based detection for Algorand transactions
-    """
-    score = 0
-    reasons = []
-    
-    # 1. Flagged Wallet Check
-    if address in flagged_wallets:
-        score += random.randint(70, 95)
-        reasons.append("Interaction with known high-risk or flagged wallet")
-    
-    # 2. Mock Transaction Frequency (Simulated)
-    tx_count = random.randint(1, 500)
-    if tx_count > 300:
-        score += 25
-        reasons.append(f"Abnormal transaction frequency detected ({tx_count} in 24h)")
-    
-    # 3. Sudden Large Transfers (Simulated)
-    last_amount = random.randint(1, 1000000)
-    if last_amount > 500000:
-        score += 20
-        reasons.append(f"Large sudden transfer detected: {last_amount:,} ALGO")
-        
-    # 4. New Account Check (Simulated)
-    is_new = random.choice([True, False, False, False])
-    if is_new:
-        score += 15
-        reasons.append("Recently activated account with high initial activity")
-
-    # Normalize score
-    final_score = min(max(score, 5), 100)
-    
-    # Determine Risk Level
-    if final_score < 30:
-        risk = "Low"
-    elif final_score < 65:
-        risk = "Medium"
-    else:
-        risk = "High"
-        
-    if not reasons:
-        reasons.append("Normalized transaction behavior")
-        
-    return final_score, risk, reasons
 
 @app.post("/analyze-wallet", response_model=AnalysisResponse)
-async def analyze_wallet(request: WalletRequest):
+async def analyze_wallet_endpoint(request: WalletRequest):
     if not request.wallet_address or len(request.wallet_address) < 10:
         raise HTTPException(status_code=400, detail="Invalid wallet address")
     
-    score, risk, reasons = calculate_txs_score(request.wallet_address)
+    result_data = txs_analyze(request.wallet_address)
     
     result = {
-        "score": score,
-        "risk": risk,
-        "reasons": reasons,
+        "score": result_data["score"],
+        "risk": result_data["risk"],
+        "reasons": result_data["reasons"],
+        "breakdown": result_data.get("breakdown"),
+        "tx_count": result_data["tx_count"],
+        "is_real_data": result_data["is_real_data"],
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     
     analysis_history.append({**result, "wallet_address": request.wallet_address})
     return result
 
+@app.post("/simulate-transaction", response_model=SimulateResponse)
+async def simulate_transaction_endpoint(request: SimulateRequest):
+    if not request.to_wallet or len(request.to_wallet) < 10:
+        raise HTTPException(status_code=400, detail="Invalid receiver address")
+        
+    tx_data = {
+        "from": request.from_wallet,
+        "to": request.to_wallet,
+        "amount": request.amount,
+        "asset": request.asset
+    }
+    
+    result_data = txs_simulate(tx_data)
+    
+    return {
+        "simulation": result_data["simulation"],
+        "risk_score": result_data["risk_score"],
+        "risk_level": result_data["risk_level"],
+        "warnings": result_data["warnings"],
+        "recommendation": result_data["recommendation"]
+    }
+
 @app.get("/transactions/{wallet}", response_model=List[Transaction])
 async def get_transactions(wallet: str):
-    # Simulated transaction history
     return [
         {
             "tx_id": f"TX_{random.randint(100000, 999999)}",
@@ -120,13 +112,12 @@ async def get_transactions(wallet: str):
 
 @app.get("/alerts")
 async def get_alerts():
-    # Return recent high-risk findings
-    return [item for item in analysis_history if item["risk"] == "High"][-5:]
+    return [item for item in analysis_history if item["risk"] == "HIGH"][-5:]
 
 @app.get("/")
 async def root():
-    return {"status": "online", "engine": "TXS v1.0.0", "blockchain": "Algorand"}
+    return {"status": "online", "engine": "TXS v2.0.0", "blockchain": "Algorand"}
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
