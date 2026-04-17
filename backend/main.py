@@ -32,6 +32,8 @@ class AnalysisResponse(BaseModel):
     timestamp: str
     tx_count: int
     is_real_data: bool
+    metadata: Optional[Dict[str, Any]] = None
+    heuristic_logs: Optional[List[str]] = None
 
 class Transaction(BaseModel):
     tx_id: str
@@ -70,6 +72,8 @@ async def analyze_wallet_endpoint(request: WalletRequest):
         "breakdown": result_data.get("breakdown"),
         "tx_count": result_data["tx_count"],
         "is_real_data": result_data["is_real_data"],
+        "metadata": result_data.get("metadata", {}),
+        "heuristic_logs": result_data.get("heuristic_logs", []),
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     

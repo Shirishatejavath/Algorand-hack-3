@@ -15,6 +15,13 @@ export interface AnalysisResult {
   timestamp: string;
   tx_count: number;
   is_real_data: boolean;
+  metadata?: {
+    node_latency_ms: number;
+    inference_time_ms: number;
+    engine_version: string;
+    confidence_score: number;
+  };
+  heuristic_logs?: string[];
 }
 
 export interface SimulationResult {

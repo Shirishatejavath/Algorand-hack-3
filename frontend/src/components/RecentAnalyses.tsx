@@ -16,27 +16,32 @@ export default function RecentAnalyses({ history, onSelect }: RecentAnalysesProp
   if (history.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-white/10 overflow-hidden" style={{ backgroundColor: '#121826' }}>
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-white/10">
-        <Clock size={16} className="text-white/40" />
-        <span className="text-sm font-semibold text-white">Recent Analyses</span>
+    <div className="glass-premium overflow-hidden animate-scale-in border-white/5">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+        <div className="flex items-center gap-3">
+          <Clock size={16} className="text-accent-blue opacity-70" />
+          <span className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Sentinel Audit Log</span>
+        </div>
+        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Last 5 Sessions</span>
       </div>
       <div className="divide-y divide-white/5">
         {history.slice().reverse().slice(0, 5).map((item, i) => (
           <button
             key={i}
             onClick={() => onSelect(item.wallet)}
-            className="w-full flex items-center justify-between px-6 py-3 hover:bg-white/3 transition-colors group text-left"
+            className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/[0.04] transition-all group text-left"
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <Shield size={13} className="text-indigo-400 shrink-0" />
-              <span className="text-xs font-mono text-white/60 truncate group-hover:text-white/80 transition-colors">
-                {item.wallet.slice(0, 12)}...{item.wallet.slice(-6)}
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-accent-blue/30 transition-colors">
+                <Shield size={14} className="text-accent-blue opacity-50 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <span className="text-xs font-mono font-bold text-slate-400 truncate group-hover:text-white transition-colors tracking-tight">
+                {item.wallet.slice(0, 16)}...{item.wallet.slice(-8)}
               </span>
             </div>
-            <div className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full border ml-3 shrink-0 ${riskColors[item.result.risk]}`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              {item.result.risk} ({item.result.score})
+            <div className={`flex items-center gap-2 text-[9px] font-black px-3 py-1 rounded border ml-4 shrink-0 uppercase tracking-widest ${riskColors[item.result.risk]}`}>
+              <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+              {item.result.risk} <span className="opacity-50 font-bold">({item.result.score})</span>
             </div>
           </button>
         ))}
