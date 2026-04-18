@@ -6,7 +6,12 @@ import time
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 
+from dotenv import load_dotenv
+
 app = FastAPI(title="BlockSentinel.ai TXS Engine + Predictor")
+
+# Load env (local dev); in production use real env vars
+load_dotenv()
 
 # Enable CORS for Frontend
 app.add_middleware(
@@ -19,6 +24,7 @@ app.add_middleware(
 
 from services.txs_engine.analyzer import analyze_wallet as txs_analyze
 from services.simulate import simulate_transaction as txs_simulate
+from services.risk_registry import get_entry as rr_get_entry, set_entry as rr_set_entry, as_dict as rr_as_dict
 
 # Data Models
 class WalletRequest(BaseModel):
@@ -32,6 +38,9 @@ class AnalysisResponse(BaseModel):
     timestamp: str
     tx_count: int
     is_real_data: bool
+    on_chain: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None
+    heuristic_logs: Optional[List[str]] = None
 
 class Transaction(BaseModel):
     tx_id: str
@@ -52,6 +61,7 @@ class SimulateResponse(BaseModel):
     risk_level: str
     warnings: List[str]
     recommendation: str
+    receiver_analysis: Optional[Dict[str, Any]] = None
 
 # Mock Database
 analysis_history = []
@@ -62,6 +72,18 @@ async def analyze_wallet_endpoint(request: WalletRequest):
         raise HTTPException(status_code=400, detail="Invalid wallet address")
     
     result_data = txs_analyze(request.wallet_address)
+
+    on_chain: Optional[Dict[str, Any]] = None
+    try:
+        entry = rr_get_entry(request.wallet_address)
+        on_chain = rr_as_dict(entry)
+
+        # If wallet is HIGH risk, register/update on-chain (best-effort)
+        if result_data.get("risk") == "HIGH":
+            tx_meta = rr_set_entry(request.wallet_address, int(result_data.get("score", 0)))
+            on_chain = {**on_chain, "write_tx": tx_meta}
+    except Exception as e:
+        on_chain = {"error": str(e)}
     
     result = {
         "score": result_data["score"],
@@ -70,6 +92,7 @@ async def analyze_wallet_endpoint(request: WalletRequest):
         "breakdown": result_data.get("breakdown"),
         "tx_count": result_data["tx_count"],
         "is_real_data": result_data["is_real_data"],
+        "on_chain": on_chain,
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     
@@ -95,7 +118,8 @@ async def simulate_transaction_endpoint(request: SimulateRequest):
         "risk_score": result_data["risk_score"],
         "risk_level": result_data["risk_level"],
         "warnings": result_data["warnings"],
-        "recommendation": result_data["recommendation"]
+        "recommendation": result_data["recommendation"],
+        "receiver_analysis": result_data.get("receiver_analysis")
     }
 
 @app.get("/transactions/{wallet}", response_model=List[Transaction])

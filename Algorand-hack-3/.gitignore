@@ -13,6 +13,9 @@ frontend/dist/
 .env.local
 .env.*.local
 
+# Contract deployment env
+contracts/.env
+
 # IDE
 .vscode/
 .idea/

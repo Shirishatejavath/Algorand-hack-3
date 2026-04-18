@@ -1,0 +1,235 @@
+#pragma version 8
+txn NumAppArgs
+int 0
+==
+bnz main_l8
+txna ApplicationArgs 0
+method "set_risk(byte[],uint64)void"
+==
+bnz main_l7
+txna ApplicationArgs 0
+method "delete_risk(byte[])void"
+==
+bnz main_l6
+txna ApplicationArgs 0
+method "get_risk(byte[])(bool,uint64,uint64)"
+==
+bnz main_l5
+err
+main_l5:
+txn OnCompletion
+int NoOp
+==
+txn ApplicationID
+int 0
+!=
+&&
+assert
+callsub getriskcaster_5
+int 1
+return
+main_l6:
+txn OnCompletion
+int NoOp
+==
+txn ApplicationID
+int 0
+!=
+&&
+assert
+callsub deleteriskcaster_4
+int 1
+return
+main_l7:
+txn OnCompletion
+int NoOp
+==
+txn ApplicationID
+int 0
+!=
+&&
+assert
+callsub setriskcaster_3
+int 1
+return
+main_l8:
+txn OnCompletion
+int NoOp
+==
+bnz main_l18
+txn OnCompletion
+int OptIn
+==
+bnz main_l17
+txn OnCompletion
+int CloseOut
+==
+bnz main_l16
+txn OnCompletion
+int UpdateApplication
+==
+bnz main_l15
+txn OnCompletion
+int DeleteApplication
+==
+bnz main_l14
+err
+main_l14:
+int 0
+return
+main_l15:
+int 0
+return
+main_l16:
+int 1
+return
+main_l17:
+int 1
+return
+main_l18:
+txn ApplicationID
+int 0
+==
+assert
+int 1
+return
+
+// set_risk
+setrisk_0:
+proto 2 0
+txn Sender
+global CreatorAddress
+==
+assert
+frame_dig -2
+extract 2 0
+len
+int 32
+==
+assert
+frame_dig -2
+extract 2 0
+frame_dig -1
+itob
+global LatestTimestamp
+itob
+concat
+box_put
+retsub
+
+// delete_risk
+deleterisk_1:
+proto 1 0
+txn Sender
+global CreatorAddress
+==
+assert
+frame_dig -1
+extract 2 0
+len
+int 32
+==
+assert
+frame_dig -1
+extract 2 0
+box_del
+pop
+retsub
+
+// get_risk
+getrisk_2:
+proto 1 1
+byte ""
+int 0
+dupn 4
+byte ""
+dup
+frame_dig -1
+extract 2 0
+len
+int 32
+==
+assert
+frame_dig -1
+extract 2 0
+box_get
+store 1
+store 0
+load 1
+bnz getrisk_2_l2
+int 0
+!
+!
+frame_bury 1
+int 0
+frame_bury 2
+int 0
+frame_bury 3
+b getrisk_2_l3
+getrisk_2_l2:
+int 1
+!
+!
+frame_bury 1
+load 0
+extract 0 8
+btoi
+frame_bury 2
+load 0
+extract 8 8
+btoi
+frame_bury 3
+getrisk_2_l3:
+byte 0x00
+int 0
+frame_dig 1
+setbit
+frame_dig 2
+itob
+concat
+frame_dig 3
+itob
+concat
+frame_bury 0
+retsub
+
+// set_risk_caster
+setriskcaster_3:
+proto 0 0
+byte ""
+int 0
+txna ApplicationArgs 1
+frame_bury 0
+txna ApplicationArgs 2
+btoi
+frame_bury 1
+frame_dig 0
+frame_dig 1
+callsub setrisk_0
+retsub
+
+// delete_risk_caster
+deleteriskcaster_4:
+proto 0 0
+byte ""
+txna ApplicationArgs 1
+frame_bury 0
+frame_dig 0
+callsub deleterisk_1
+retsub
+
+// get_risk_caster
+getriskcaster_5:
+proto 0 0
+byte ""
+dup
+txna ApplicationArgs 1
+frame_bury 1
+frame_dig 1
+callsub getrisk_2
+frame_bury 0
+byte 0x151f7c75
+frame_dig 0
+concat
+log
+retsub
