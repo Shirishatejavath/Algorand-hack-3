@@ -54,6 +54,19 @@ python contracts/deploy.py
 
 The script prints the **app_id** you’ll use from backend/frontend.
 
+## Call ABI from Python (`interact_abi.py`)
+
+From repo root (uses `backend/.env` for `ALGOD_*`, `CREATOR_MNEMONIC`, `RISK_REGISTRY_APP_ID`):
+
+```bash
+python contracts/interact_abi.py
+python contracts/interact_abi.py --get-only
+python contracts/interact_abi.py --address YOUR58CHARADDRESS --score 85
+```
+
+- The first `set_risk` needs the **application escrow** funded (boxes increase app min balance). The script **auto-sends** TestNet ALGO to the app account if it is below ~1 ALGO.
+- For **App Lab**, paste `address_pk` as **hex** (or base64 if the UI asks); add a **box ref** `(app_id, same 32 bytes)`.
+
 ## ABI methods
 
 The contract stores entries in **boxes** keyed by a 32-byte public key (decoded Algorand address bytes).
