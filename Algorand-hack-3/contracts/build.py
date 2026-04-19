@@ -22,30 +22,26 @@ def _algod_client() -> AlgodClient:
     return AlgodClient(token, addr)
 
 
-def _build_arc32(
-    contract_dict: dict,
-    approval_teal: str,
-    clear_teal: str,
-    client: AlgodClient,
-) -> dict:
-    approval_b64 = client.compile(approval_teal)["result"]
-    clear_b64 = client.compile(clear_teal)["result"]
+def _testnet_networks_arc32(app_id: int | None) -> dict:
+    if app_id is None:
+        return {}
+    return {
+        "SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=": {"appId": app_id},
+        "testnet-v1.0": {"appId": app_id},
+    }
 
-    # Decode once to verify programs are valid base64 TEAL bytecode
-    base64.b64decode(approval_b64)
-    base64.b64decode(clear_b64)
 
-    app_id = os.getenv("RISK_REGISTRY_APP_ID", "").strip()
-    networks: dict = {}
-    if app_id.isdigit():
-        aid = int(app_id)
-        networks = {
-            "SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=": {"appId": aid},
-            "testnet-v1.0": {"appId": aid},
-        }
+def _testnet_networks_arc56(app_id: int | None) -> dict:
+    """ARC-56 uses camelCase appID in network entries."""
+    if app_id is None:
+        return {}
+    return {
+        "SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=": {"appID": app_id},
+        "testnet-v1.0": {"appID": app_id},
+    }
 
-    contract_block = {**contract_dict, "networks": networks or contract_dict.get("networks", {})}
 
+def _compiler_info(client: AlgodClient) -> dict:
     versions = client.versions()
     ci = versions.get("versions", {}) if isinstance(versions, dict) else {}
     major, minor, patch = 4, 6, 0
@@ -62,6 +58,34 @@ def _build_arc32(
             patch = int(segs[2].split("-")[0])
     except Exception:
         pass
+    return {
+        "compiler": "algod",
+        "compilerVersion": {
+            "major": major,
+            "minor": minor,
+            "patch": patch,
+            "commitHash": commit_hash,
+        },
+    }
+
+
+def _resolved_app_id() -> int | None:
+    app_id = os.getenv("RISK_REGISTRY_APP_ID", "").strip()
+    return int(app_id) if app_id.isdigit() else None
+
+
+def _build_arc32(
+    contract_dict: dict,
+    approval_b64: str,
+    clear_b64: str,
+    client: AlgodClient,
+) -> dict:
+    base64.b64decode(approval_b64)
+    base64.b64decode(clear_b64)
+
+    aid = _resolved_app_id()
+    networks = _testnet_networks_arc32(aid) if aid is not None else (contract_dict.get("networks") or {})
+    contract_block = {**contract_dict, "networks": networks}
 
     return {
         "schema": {
@@ -77,15 +101,44 @@ def _build_arc32(
             "approval": approval_b64,
             "clear": clear_b64,
         },
-        "compilerInfo": {
-            "compiler": "algod",
-            "compilerVersion": {
-                "major": major,
-                "minor": minor,
-                "patch": patch,
-                "commitHash": commit_hash,
+        "compilerInfo": _compiler_info(client),
+    }
+
+
+def _build_arc56(
+    contract_dict: dict,
+    approval_b64: str,
+    clear_b64: str,
+    client: AlgodClient,
+) -> dict:
+    """ARC-56 combined spec (Lora / newer clients). Same bytecode + methods as ARC-32."""
+    aid = _resolved_app_id()
+    networks = _testnet_networks_arc56(aid) if aid is not None else {}
+
+    return {
+        "arcs": [4, 22, 28, 56],
+        "name": contract_dict.get("name", "RiskRegistry"),
+        "desc": "On-chain risk registry (boxes keyed by 32-byte address public key).",
+        "networks": networks,
+        "structs": {},
+        "methods": contract_dict.get("methods", []),
+        "state": {
+            "schema": {
+                "global": {"ints": 0, "bytes": 0},
+                "local": {"ints": 0, "bytes": 0},
             },
+            "keys": {"global": {}, "local": {}, "box": {}},
+            "maps": {"global": {}, "local": {}, "box": {}},
         },
+        "bareActions": {
+            "create": ["NoOp"],
+            "call": ["NoOp", "OptIn", "CloseOut"],
+        },
+        "byteCode": {
+            "approval": approval_b64,
+            "clear": clear_b64,
+        },
+        "compilerInfo": _compiler_info(client),
     }
 
 
@@ -99,20 +152,27 @@ def main() -> None:
     (ARTIFACTS_DIR / "clear.teal").write_text(clear, encoding="utf-8")
 
     client = _algod_client()
-    arc32 = _build_arc32(contract.dictify(), approval, clear, client)
+    approval_b64 = client.compile(approval)["result"]
+    clear_b64 = client.compile(clear)["result"]
 
-    out_path = ARTIFACTS_DIR / "RiskRegistry.arc32.json"
-    out_path.write_text(json.dumps(arc32, indent=2, sort_keys=True), encoding="utf-8")
+    cdict = contract.dictify()
+    arc32 = _build_arc32(cdict, approval_b64, clear_b64, client)
+    arc56 = _build_arc56(cdict, approval_b64, clear_b64, client)
 
-    # Single app spec: remove legacy duplicates if present
-    for stale in ("contract.json", "RiskRegistry.arc56.json"):
-        p = ARTIFACTS_DIR / stale
-        if p.exists():
-            p.unlink()
+    path32 = ARTIFACTS_DIR / "RiskRegistry.arc32.json"
+    path56 = ARTIFACTS_DIR / "RiskRegistry.arc56.json"
+    path32.write_text(json.dumps(arc32, indent=2, sort_keys=True), encoding="utf-8")
+    path56.write_text(json.dumps(arc56, indent=2, sort_keys=True), encoding="utf-8")
+
+    # Legacy minimal ARC-4-only file — not needed if you use ARC-32/56 in Lora
+    stale = ARTIFACTS_DIR / "contract.json"
+    if stale.exists():
+        stale.unlink()
 
     print(f"Wrote {ARTIFACTS_DIR / 'approval.teal'}")
     print(f"Wrote {ARTIFACTS_DIR / 'clear.teal'}")
-    print(f"Wrote {out_path}")
+    print(f"Wrote {path32}")
+    print(f"Wrote {path56}")
 
 
 if __name__ == "__main__":

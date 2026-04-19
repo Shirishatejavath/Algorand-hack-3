@@ -14,9 +14,12 @@ This writes:
 
 - `contracts/artifacts/approval.teal`
 - `contracts/artifacts/clear.teal`
-- `contracts/artifacts/RiskRegistry.arc32.json` (**single ARC-32 app spec** for Lora / clients)
+- `contracts/artifacts/RiskRegistry.arc32.json` (**ARC-32** app spec — common in Lora / explorers)
+- `contracts/artifacts/RiskRegistry.arc56.json` (**ARC-56** app spec — newer tooling; same contract, same bytecode)
 
-If `RISK_REGISTRY_APP_ID` is set in `backend/.env`, it is embedded under `contract.networks` for TestNet.
+You only need **one** of the JSON files in Lora (whichever the UI asks for). Both are kept in sync by `build.py`.
+
+If `RISK_REGISTRY_APP_ID` is set in `backend/.env`, TestNet deployment ids are embedded in both specs.
 
 ## AlgoKit CLI (optional)
 
@@ -82,7 +85,7 @@ python contracts/interact_abi.py --address YOUR58CHARADDRESS --score 85
 ```
 
 - The first `set_risk` needs the **application escrow** funded (boxes increase app min balance). The script **auto-sends** TestNet ALGO to the app account if it is below ~1 ALGO.
-- For **App Lab**, upload **`RiskRegistry.arc32.json`** (not the old `contract.json`). Paste `address_pk` as **hex** or **base64**; add a **box ref** `(app_id, same 32 bytes)`.
+- For **App Lab**, upload **`RiskRegistry.arc32.json`** *or* **`RiskRegistry.arc56.json`** (pick the format the screen requests). Paste `address_pk` as **hex** or **base64**; add a **box ref** `(app_id, same 32 bytes)`.
 
 ## ABI methods
 
