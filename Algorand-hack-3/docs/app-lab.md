@@ -56,6 +56,19 @@ print(base64.b64encode(pk).decode())  # or base64 if the UI expects that
   - **Application id:** your RiskRegistry app id  
   - **Box name:** the **same 32 bytes** as `address_pk` (same hex or base64 encoding the UI expects)
 
+### Beginner checklist before you click **Send** / **Simulate**
+
+1. Find **On complete** / **On completion** → set it to **`NoOp`** (not Close-out).
+2. Open **Resources** → **boxes** → click **Populate Resources** if Lora offers it, or **Add** a box manually:
+   - App: **`759012792`** (or your current app id)
+   - Box name: **exactly the same string** you used for `address_pk` (your 64-char hex is correct).
+3. Confirm **Connected wallet** = the **creator** (the account that deployed the app). One wrong character in the 58-char address = wrong account.
+4. Try simulation again. If it still fails, uncheck **Require signatures on simulate** (optional; depends on Lora version).
+
+### If you see `assert failed` + `!=` `&&` `assert`
+
+Almost always one of: **wrong On complete** (not NoOp), **missing box**, or **not the creator wallet**.
+
 ## App escrow funding (first `set_risk`)
 
 Creating a box increases the **application account** minimum balance. If `set_risk` fails with the **app escrow** address having insufficient balance, fund that address on TestNet (dispenser), or run:
