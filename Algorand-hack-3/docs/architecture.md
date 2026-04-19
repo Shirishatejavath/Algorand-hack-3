@@ -47,3 +47,6 @@ The TXS Engine analyzes the following vectors to derive its 0-100 risk score:
 
 ## 🛡 Resiliency & Demo-Safety
 BlockSentinel implements a multi-tiered fallback architecture. If the Algorand Indexer API is unreachable or rate-limited, the system automatically transitions to a localized simulation model to ensure uninterrupted demo stability while maintaining high-fidelity results.
+
+## 🔗 Operating the Risk Registry (Lora / TestNet)
+For uploading ARC specs, calling ABI methods, box references, and creator wallet requirements, see **[app-lab.md](app-lab.md)**.
