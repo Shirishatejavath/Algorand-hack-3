@@ -6,7 +6,7 @@ Loads env from backend/.env:
 
 Usage (from repo root):
   python contracts/interact_abi.py
-  python contracts/interact_abi.py --address RKP6SEO... --score 85
+  python contracts/interact_abi.py --address RKP6SEOFZ42CX2JZDUOPK732QFEXLLTCFVPWTCHDLM3AEQJ6CFSTST2D4Q --score 85
   python contracts/interact_abi.py --get-only   # only get_risk (no write)
 """
 from __future__ import annotations

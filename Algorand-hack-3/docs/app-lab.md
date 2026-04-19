@@ -18,11 +18,11 @@ Outputs:
 | `contracts/artifacts/RiskRegistry.arc56.json` | Upload when Lora asks for **ARC-56** |
 | `contracts/artifacts/approval.teal` / `clear.teal` | Source / debugging |
 
-Set `RISK_REGISTRY_APP_ID` in `backend/.env` before building if you want the deployed app id embedded in the spec `networks` section.
+Set `RISK_REGISTRY_APP_ID` in `backend/.env` before building if you want the deployed app ID embedded in the spec `networks` section.
 
 ## If the app is already deployed
 
-You **do not** need to deploy again unless you want a **new** app id.
+You **do not** need to deploy again unless you want a **new** app ID.
 
 1. **App Lab → Create** (or open your saved interface).
 2. Upload **`RiskRegistry.arc32.json`** (or **`.arc56.json`** if the UI requests ARC-56).
@@ -53,14 +53,14 @@ print(base64.b64encode(pk).decode())  # or base64 if the UI expects that
 - **On completion:** **`NoOp`** for all ABI method calls. Using **Close-out** or **Opt-in** for a normal ABI call will fail logic checks.
 - **Box references:** Required for every call that touches box storage. Add:
 
-  - **Application id:** your RiskRegistry app id  
+  - **Application ID:** your RiskRegistry app ID  
   - **Box name:** the **same 32 bytes** as `address_pk` (same hex or base64 encoding the UI expects)
 
 ### Beginner checklist before you click **Send** / **Simulate**
 
 1. Find **On complete** / **On completion** → set it to **`NoOp`** (not Close-out).
 2. Open **Resources** → **boxes** → click **Populate Resources** if Lora offers it, or **Add** a box manually:
-   - App: **`759012792`** (or your current app id)
+   - App: **`759012792`** (or your current app ID)
    - Box name: **exactly the same string** you used for `address_pk` (your 64-char hex is correct).
 3. Confirm **Connected wallet** = the **creator** (the account that deployed the app). One wrong character in the 58-char address = wrong account.
 4. Try simulation again. If it still fails, uncheck **Require signatures on simulate** (optional; depends on Lora version).

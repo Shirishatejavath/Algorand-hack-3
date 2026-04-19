@@ -24,14 +24,14 @@ class BoxLayout:
 
 def build_router() -> Router:
     """
-    A simple on-chain Risk Registry.
+    On-chain risk registry (RiskRegistry).
 
     Storage:
-      - Boxes keyed by 32-byte public key (decoded Algorand address bytes)
-      - Each box stores {score:uint64, updated_at:uint64}
+      - Boxes keyed by each wallet's 32-byte public key (decoded Algorand address bytes).
+      - Each box stores score (uint64) and updated_at (uint64, Unix seconds).
 
     Authorization:
-      - Only the creator may mutate registry entries.
+      - Only the application creator may mutate registry entries (set_risk, delete_risk).
     """
 
     router = Router(

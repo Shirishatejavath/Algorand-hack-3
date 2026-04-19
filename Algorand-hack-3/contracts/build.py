@@ -118,7 +118,7 @@ def _build_arc56(
     return {
         "arcs": [4, 22, 28, 56],
         "name": contract_dict.get("name", "RiskRegistry"),
-        "desc": "On-chain risk registry (boxes keyed by 32-byte address public key).",
+        "desc": "On-chain risk registry with boxes keyed by each wallet's 32-byte public key (Algorand address preimage).",
         "networks": networks,
         "structs": {},
         "methods": contract_dict.get("methods", []),

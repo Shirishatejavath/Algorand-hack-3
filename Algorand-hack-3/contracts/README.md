@@ -72,7 +72,7 @@ python contracts/build.py
 python contracts/deploy.py
 ```
 
-The script prints the **app_id** you’ll use from backend/frontend.
+The script prints the **app ID** you will use from the backend or frontend.
 
 ## Call ABI from Python (`interact_abi.py`)
 

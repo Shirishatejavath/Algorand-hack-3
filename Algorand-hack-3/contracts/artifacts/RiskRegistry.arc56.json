@@ -28,7 +28,7 @@
       "patch": 0
     }
   },
-  "desc": "On-chain risk registry (boxes keyed by 32-byte address public key).",
+  "desc": "On-chain risk registry with boxes keyed by each wallet's 32-byte public key (Algorand address preimage).",
   "methods": [
     {
       "args": [
