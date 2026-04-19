@@ -5,7 +5,8 @@ BlockSentinel.ai is a production-ready security layer for the Algorand blockchai
 
 ![System Architecture](C:/Users/tejas/.gemini/antigravity/brain/9107103d-7e84-459d-a101-65cc3fe76571/blocksentinel_architecture_visual_1776335176055.png)
 
-> **[View Detailed Architecture & System Flow →](docs/architecture.md)**
+> **[View Detailed Architecture & System Flow →](docs/architecture.md)**  
+> **[Lora (App Lab) — deploy, ABI calls, box refs →](docs/app-lab.md)**
 
 ---
 
@@ -49,6 +50,10 @@ BlockSentinel.ai/
 
 ## 🏁 Getting Started
 
+### 0. Environment
+- Copy `backend/.env.example` to `backend/.env` and set `CREATOR_MNEMONIC`, `RISK_REGISTRY_APP_ID` (after deploy), and optionally `ALGOD_*`.
+- Copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL=http://localhost:8000` (or your Render URL).
+
 ### 1. Backend (TXS Engine)
 ```bash
 cd backend
@@ -58,12 +63,20 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
+`POST /analyze-wallet` returns an `on_chain` field when the registry env vars are set.
+
 ### 2. Frontend (Dashboard)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
+### 3. Smart contract artifacts & Lora
+```bash
+python contracts/build.py   # writes ARC-32 / ARC-56 + TEAL under contracts/artifacts/
+```
+See **[docs/app-lab.md](docs/app-lab.md)** for App Lab upload, ABI calls, and box references.
 
 ---
 
