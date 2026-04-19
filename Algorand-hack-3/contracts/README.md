@@ -14,39 +14,24 @@ This writes:
 
 - `contracts/artifacts/approval.teal`
 - `contracts/artifacts/clear.teal`
-- `contracts/artifacts/contract.json` (ARC-4 contract spec)
+- `contracts/artifacts/RiskRegistry.arc32.json` (**single ARC-32 app spec** for Lora / clients)
 
-## ARC-56 / ARC-32-style app spec (Lora / typed clients)
+If `RISK_REGISTRY_APP_ID` is set in `backend/.env`, it is embedded under `contract.networks` for TestNet.
 
-After `build.py` has produced TEAL + `contract.json`, generate extended specs:
+## AlgoKit CLI (optional)
 
-```bash
-python contracts/build_arc_specs.py
-```
-
-Writes:
-
-- `contracts/artifacts/RiskRegistry.arc56.json` — **ARC-56** (methods + bytecode + TestNet `appID`)
-- `contracts/artifacts/RiskRegistry.arc32.json` — **minimal ARC-32-shaped** JSON for tools that ask for “ARC-32”
-
-Uses `ALGOD_ADDRESS` / `ALGOD_TOKEN` from `backend/.env` if set; otherwise public TestNet AlgoNode. Optional: `RISK_REGISTRY_APP_ID` (defaults to `759012792`).
-
-## Algokit CLI (optional)
-
-The PyPI package name is **`algokit`** (not `algokit-cli`):
+Install (same venv as backend is fine):
 
 ```bash
 pip install algokit
 ```
 
-On Windows, scripts install to your user **Scripts** folder (e.g. `%APPDATA%\Python\Python313\Scripts`). Add that folder to **PATH**, then:
+On Windows, if `algokit` is not on your PATH, use:
 
 ```bash
-algokit --help
-algokit localnet start
+python -m algokit --version
+python -m algokit localnet start
 ```
-
-Localnet requires **Docker** to be installed and running.
 
 ## Deploy (TestNet)
 
@@ -97,7 +82,7 @@ python contracts/interact_abi.py --address YOUR58CHARADDRESS --score 85
 ```
 
 - The first `set_risk` needs the **application escrow** funded (boxes increase app min balance). The script **auto-sends** TestNet ALGO to the app account if it is below ~1 ALGO.
-- For **App Lab**, paste `address_pk` as **hex** (or base64 if the UI asks); add a **box ref** `(app_id, same 32 bytes)`.
+- For **App Lab**, upload **`RiskRegistry.arc32.json`** (not the old `contract.json`). Paste `address_pk` as **hex** or **base64**; add a **box ref** `(app_id, same 32 bytes)`.
 
 ## ABI methods
 
