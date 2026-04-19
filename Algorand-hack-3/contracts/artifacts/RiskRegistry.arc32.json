@@ -1,0 +1,88 @@
+{
+  "schema": {
+    "global": {
+      "ints": 0,
+      "bytes": 0
+    },
+    "local": {
+      "ints": 0,
+      "bytes": 0
+    }
+  },
+  "contract": {
+    "name": "RiskRegistry",
+    "methods": [
+      {
+        "args": [
+          {
+            "name": "address_pk",
+            "type": "byte[]"
+          },
+          {
+            "name": "score",
+            "type": "uint64"
+          }
+        ],
+        "name": "set_risk",
+        "returns": {
+          "type": "void"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "address_pk",
+            "type": "byte[]"
+          }
+        ],
+        "name": "delete_risk",
+        "returns": {
+          "type": "void"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "address_pk",
+            "type": "byte[]"
+          }
+        ],
+        "name": "get_risk",
+        "returns": {
+          "type": "(bool,uint64,uint64)"
+        }
+      }
+    ],
+    "networks": {
+      "SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=": {
+        "appId": 759012792
+      },
+      "testnet-v1.0": {
+        "appId": 759012792
+      }
+    }
+  },
+  "bareActions": {
+    "create": [
+      "NoOp"
+    ],
+    "call": [
+      "NoOp",
+      "OptIn",
+      "CloseOut"
+    ]
+  },
+  "byteCode": {
+    "approval": "CCADAAEgJgEAMRsiEkAAVTYaAIAEwGYQnBJAADk2GgCABIJFsH8SQAAdNhoAgASQyCgxEkAAAQAxGSISMRgiExBEiAENI0MxGSISMRgiExBEiADvI0MxGSISMRgiExBEiADII0MxGSISQAAoMRkjEkAAHzEZgQISQAAVMRmBBBJAAAsxGYEFEkAAAQAiQyJDI0MjQzEYIhJEI0OKAgAxADIJEkSL/lcCABUkEkSL/lcCAIv/FjIHFlC/iYoBADEAMgkSRIv/VwIAFSQSRIv/VwIAvEiJigEBKCJHBChJi/9XAgAVJBJEi/9XAgC+NQE1ADQBQAAOIhQUjAEijAIijANCABUjFBSMATQAVwAIF4wCNABXCAgXjAOAAQAiiwFUiwIWUIsDFlCMAImKAAAoIjYaAYwANhoCF4wBiwCLAYj/WYmKAAAoNhoBjACLAIj/aomKAAAoSTYaAYwBiwGI/3SMAIAEFR98dYsAULCJ",
+    "clear": "CIEAQw=="
+  },
+  "compilerInfo": {
+    "compiler": "algod",
+    "compilerVersion": {
+      "major": 4,
+      "minor": 6,
+      "patch": 0,
+      "commitHash": "0915527b+"
+    }
+  }
+}

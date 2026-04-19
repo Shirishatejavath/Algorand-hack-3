@@ -16,6 +16,38 @@ This writes:
 - `contracts/artifacts/clear.teal`
 - `contracts/artifacts/contract.json` (ARC-4 contract spec)
 
+## ARC-56 / ARC-32-style app spec (Lora / typed clients)
+
+After `build.py` has produced TEAL + `contract.json`, generate extended specs:
+
+```bash
+python contracts/build_arc_specs.py
+```
+
+Writes:
+
+- `contracts/artifacts/RiskRegistry.arc56.json` — **ARC-56** (methods + bytecode + TestNet `appID`)
+- `contracts/artifacts/RiskRegistry.arc32.json` — **minimal ARC-32-shaped** JSON for tools that ask for “ARC-32”
+
+Uses `ALGOD_ADDRESS` / `ALGOD_TOKEN` from `backend/.env` if set; otherwise public TestNet AlgoNode. Optional: `RISK_REGISTRY_APP_ID` (defaults to `759012792`).
+
+## Algokit CLI (optional)
+
+The PyPI package name is **`algokit`** (not `algokit-cli`):
+
+```bash
+pip install algokit
+```
+
+On Windows, scripts install to your user **Scripts** folder (e.g. `%APPDATA%\Python\Python313\Scripts`). Add that folder to **PATH**, then:
+
+```bash
+algokit --help
+algokit localnet start
+```
+
+Localnet requires **Docker** to be installed and running.
+
 ## Deploy (TestNet)
 
 1) Install backend deps (includes `pyteal`, `py-algorand-sdk`, `python-dotenv`)
