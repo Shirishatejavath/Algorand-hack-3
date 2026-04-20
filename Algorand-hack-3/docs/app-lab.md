@@ -92,3 +92,17 @@ Uses `backend/.env` (`ALGOD_*`, `CREATOR_MNEMONIC`, `RISK_REGISTRY_APP_ID`).
 
 - [AlgoKit quick start — deploy & interact](https://dev.algorand.co/getting-started/algokit-quick-start/#deploy-the-hello-world-application)
 - [AlgoKit clients — calling methods](https://dev.algorand.co/algokit/utils/algokit-clients/#calling-a-smart-contract-method)
+
+## Latest verification run (TestNet)
+
+Executed from this repo using:
+
+```bash
+python contracts/interact_abi.py --address RKP6SEOFZ42CX2JZDUOPK732QFEXLLTCFVPWTCHDLM3AEQJ6CFSTST2D4Q --score 85
+```
+
+Result:
+
+- `set_risk` tx id: `F75W7C4AZZPQG76NUGNRUDHWXGNJSROB3DMFJFBLHKSFYQQCNCOQ`
+- `get_risk` tx id: `XUKTGDTWCHEN6I2EJWXXWAQ27ENY5FKIJNPI6EVS6H3OQVKUFOPQ`
+- `get_risk` return: `[True, 85, 1776681633]`
