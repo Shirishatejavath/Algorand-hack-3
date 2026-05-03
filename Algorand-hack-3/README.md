@@ -84,4 +84,11 @@ See **[docs/app-lab.md](docs/app-lab.md)** for App Lab upload, ABI calls, and bo
 Blockchain transactions are irreversible. BlockSentinel.ai is the missing intelligence layer that makes Web3 safer, one transaction at a time. We are building the trust infrastructure required for the next billion users on Algorand.
 
 ---
+## 🔐 Security Practices
+- `.env` is excluded via `.gitignore`.
+- Secrets are never pushed to GitHub.
+- Keys are rotated immediately if exposed.
+- Environment variables are used securely in code and deployment.
+
+---
 *Built for Algorand Hack Series 3.*

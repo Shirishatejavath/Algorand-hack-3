@@ -11,7 +11,10 @@ frontend/dist/
 # Environment
 .env
 .env.local
+.env.*
 .env.*.local
+!.env.example
+!**/.env.example
 
 # Contract deployment env
 contracts/.env
